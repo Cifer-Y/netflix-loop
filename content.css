@@ -148,6 +148,36 @@
   background: #f6121d;
 }
 
+#nfl-panel .nfl-rates {
+  gap: 3px;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+#nfl-panel .nfl-rate {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ccc;
+  border-radius: 3px;
+  padding: 3px 0;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  cursor: pointer;
+  min-width: 0;
+}
+
+#nfl-panel .nfl-rate:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+#nfl-panel .nfl-rate.nfl-rate-on {
+  background: #e50914;
+  border-color: #e50914;
+  color: #fff;
+}
+
 #nfl-panel .nfl-now {
   margin-top: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

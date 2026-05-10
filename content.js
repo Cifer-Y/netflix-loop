@@ -4,7 +4,8 @@
 
   let video = null;
   let panel = null;
-  let loopState = { enabled: false, start: 0, end: 0 };
+  let loopState = { enabled: false, start: 0, end: 0, rate: 1 };
+  const RATE_PRESETS = [0.5, 0.75, 1, 1.25, 1.5];
   let programmaticSeek = false;
   let lastVideoId = null;
 
@@ -75,10 +76,36 @@
     if (video) {
       video.removeEventListener('timeupdate', onTimeUpdate);
       video.removeEventListener('seeking', onSeeking);
+      video.removeEventListener('ratechange', onRateChange);
     }
     video = v;
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('seeking', onSeeking);
+    video.addEventListener('ratechange', onRateChange);
+    applyPlaybackRate();
+  }
+
+  function applyPlaybackRate() {
+    if (!video) return;
+    const target = loopState.rate || 1;
+    if (Math.abs(video.playbackRate - target) > 0.001) {
+      video.playbackRate = target;
+    }
+  }
+
+  function onRateChange() {
+    if (!video) return;
+    const target = loopState.rate || 1;
+    if (Math.abs(video.playbackRate - target) > 0.001) {
+      video.playbackRate = target;
+    }
+  }
+
+  function setRate(rate) {
+    loopState.rate = rate;
+    applyPlaybackRate();
+    persist();
+    refreshPanel();
   }
 
   function onTimeUpdate() {
@@ -128,6 +155,9 @@
           <button class="nfl-toggle">Loop OFF</button>
           <button class="nfl-jump" title="Jump to start">⤴</button>
         </div>
+        <div class="nfl-row nfl-rates">
+          ${RATE_PRESETS.map((r) => `<button class="nfl-rate" data-rate="${r}" title="Playback speed ${r}x">${r === 1 ? '1×' : r}</button>`).join('')}
+        </div>
         <div class="nfl-now">--:-- / --:--</div>
       </div>
     `;
@@ -175,6 +205,10 @@
       if (!video || loopState.end <= loopState.start) return;
       seekToSeconds(loopState.start);
     });
+
+    panel.querySelectorAll('.nfl-rate').forEach((btn) => {
+      btn.addEventListener('click', () => setRate(parseFloat(btn.dataset.rate)));
+    });
   }
 
   function commitInputs() {
@@ -210,6 +244,11 @@
     toggleBtn.textContent = loopState.enabled ? 'Loop ON' : 'Loop OFF';
     toggleBtn.classList.toggle('nfl-on', loopState.enabled);
     panel.classList.toggle('nfl-active', loopState.enabled);
+    const currentRate = loopState.rate || 1;
+    panel.querySelectorAll('.nfl-rate').forEach((btn) => {
+      const r = parseFloat(btn.dataset.rate);
+      btn.classList.toggle('nfl-rate-on', Math.abs(r - currentRate) < 0.001);
+    });
   }
 
   function updateNowDisplay() {
@@ -221,7 +260,8 @@
   }
 
   function applyLoadedRange(range) {
-    loopState = { enabled: false, start: 0, end: 0, ...(range || {}) };
+    loopState = { enabled: false, start: 0, end: 0, rate: 1, ...(range || {}) };
+    applyPlaybackRate();
     if (!panel) return;
     panel.querySelector('[data-field="start"]').value = loopState.start ? formatTime(loopState.start) : '';
     panel.querySelector('[data-field="end"]').value = loopState.end ? formatTime(loopState.end) : '';
@@ -255,13 +295,14 @@
     if (video) {
       video.removeEventListener('timeupdate', onTimeUpdate);
       video.removeEventListener('seeking', onSeeking);
+      video.removeEventListener('ratechange', onRateChange);
       video = null;
     }
     if (panel && panel.parentElement) {
       panel.parentElement.removeChild(panel);
     }
     panel = null;
-    loopState = { enabled: false, start: 0, end: 0 };
+    loopState = { enabled: false, start: 0, end: 0, rate: 1 };
   }
 
   async function onUrlChange() {
