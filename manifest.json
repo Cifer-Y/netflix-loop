@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Netflix Loop",
+  "version": "1.0.0",
+  "description": "Loop a specified time range on Netflix. Useful for language learning, music, dance practice, etc.",
+  "content_scripts": [
+    {
+      "matches": ["*://www.netflix.com/watch/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage"],
+  "host_permissions": ["*://www.netflix.com/*"]
+}
