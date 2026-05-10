@@ -36,6 +36,17 @@
     return m ? m[1] : null;
   }
 
+  function isWatchPage() {
+    return /\/watch\/\d+/.test(location.pathname);
+  }
+
+  function seekToSeconds(seconds) {
+    programmaticSeek = true;
+    window.dispatchEvent(new CustomEvent('netflix-loop:seek', {
+      detail: { timeMs: Math.round(seconds * 1000) }
+    }));
+  }
+
   // ---------- storage ----------
 
   async function loadRange(videoId) {
@@ -76,8 +87,7 @@
     if (!loopState.enabled) return;
     if (loopState.end <= loopState.start) return;
     if (video.currentTime >= loopState.end) {
-      programmaticSeek = true;
-      video.currentTime = loopState.start;
+      seekToSeconds(loopState.start);
     }
   }
 
@@ -163,8 +173,7 @@
 
     jumpBtn.addEventListener('click', () => {
       if (!video || loopState.end <= loopState.start) return;
-      programmaticSeek = true;
-      video.currentTime = loopState.start;
+      seekToSeconds(loopState.start);
     });
   }
 
@@ -232,25 +241,47 @@
 
   // ---------- video discovery + SPA nav ----------
 
-  async function onUrlChange() {
-    const id = getVideoId();
-    if (id === lastVideoId) return;
-    lastVideoId = id;
-    const range = await loadRange(id);
-    applyLoadedRange(range);
-  }
-
   function findAndAttach() {
     const v = document.querySelector('video');
     if (v) attachVideo(v);
   }
 
-  function init() {
+  function activate() {
     ensurePanel();
     findAndAttach();
+  }
+
+  function deactivate() {
+    if (video) {
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.removeEventListener('seeking', onSeeking);
+      video = null;
+    }
+    if (panel && panel.parentElement) {
+      panel.parentElement.removeChild(panel);
+    }
+    panel = null;
+    loopState = { enabled: false, start: 0, end: 0 };
+  }
+
+  async function onUrlChange() {
+    const id = getVideoId();
+    if (id === lastVideoId) return;
+    lastVideoId = id;
+    if (!isWatchPage()) {
+      deactivate();
+      return;
+    }
+    activate();
+    const range = await loadRange(id);
+    applyLoadedRange(range);
+  }
+
+  function init() {
     onUrlChange();
 
     const observer = new MutationObserver(() => {
+      if (!isWatchPage()) return;
       const v = document.querySelector('video');
       if (v && v !== video) attachVideo(v);
     });

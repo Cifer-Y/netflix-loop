@@ -36,9 +36,14 @@ Drag the timeline outside the marked range to disable the loop and watch normall
 
 | File | What it does |
 |---|---|
-| `manifest.json` | Manifest V3 declaration; injects content script on `netflix.com/watch/*` |
-| `content.js` | Finds the `<video>`, builds the panel, handles loop logic + persistence |
+| `manifest.json` | Manifest V3 declaration; injects scripts on all of `netflix.com` |
+| `content.js` | Builds the panel, handles loop logic + persistence (isolated world) |
+| `page.js` | Bridges to Netflix's `netflix.appContext` player API for seeks (MAIN world) |
 | `content.css` | Panel styling (Netflix-themed dark) |
+
+### Why two scripts
+
+Setting `video.currentTime` directly trips Netflix's DRM compatibility check (error code **M7375**). The fix is to call Netflix's own player API (`netflix.appContext.state.playerApp.getAPI().videoPlayer.getVideoPlayerBySessionId(id).seek(ms)`), which lives on the page's real `window` and isn't reachable from the content script's isolated world. So `content.js` (isolated) dispatches `CustomEvent`s on `window`, and `page.js` (MAIN world, declared via `"world": "MAIN"`) listens and forwards them to the Netflix player.
 
 ## Notes
 

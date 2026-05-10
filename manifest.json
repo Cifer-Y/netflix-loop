@@ -5,9 +5,15 @@
   "description": "Loop a specified time range on Netflix. Useful for language learning, music, dance practice, etc.",
   "content_scripts": [
     {
-      "matches": ["*://www.netflix.com/watch/*"],
+      "matches": ["*://www.netflix.com/*"],
       "js": ["content.js"],
       "css": ["content.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://www.netflix.com/*"],
+      "js": ["page.js"],
+      "world": "MAIN",
       "run_at": "document_idle"
     }
   ],
