@@ -6,6 +6,9 @@
   let panel = null;
   let loopState = { enabled: false, start: 0, end: 0, rate: 1 };
   const RATE_PRESETS = [0.5, 0.75, 1, 1.25, 1.5];
+  const RATE_MIN = 0.25;
+  const RATE_MAX = 2.0;
+  const RATE_STEP = 0.05;
   let programmaticSeek = false;
   let lastVideoId = null;
 
@@ -102,10 +105,26 @@
   }
 
   function setRate(rate) {
-    loopState.rate = rate;
+    if (!Number.isFinite(rate)) return;
+    const clamped = Math.max(RATE_MIN, Math.min(RATE_MAX, rate));
+    loopState.rate = Math.round(clamped * 100) / 100;
     applyPlaybackRate();
     persist();
     refreshPanel();
+  }
+
+  function bumpRate(delta) {
+    setRate((loopState.rate || 1) + delta);
+  }
+
+  function parseRate(str) {
+    const trimmed = String(str ?? '').trim().replace(/[×x]\s*$/i, '');
+    const n = parseFloat(trimmed);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function formatRate(r) {
+    return parseFloat((r || 1).toFixed(2)).toString();
   }
 
   function onTimeUpdate() {
@@ -158,6 +177,11 @@
         <div class="nfl-row nfl-rates">
           ${RATE_PRESETS.map((r) => `<button class="nfl-rate" data-rate="${r}" title="Playback speed ${r}x">${r === 1 ? '1×' : r}</button>`).join('')}
         </div>
+        <div class="nfl-row nfl-fine">
+          <button class="nfl-step" data-step="-1" title="Slower (−0.05)">−</button>
+          <input type="text" class="nfl-rate-input" value="1" spellcheck="false" title="Custom speed (0.25–2.00)">
+          <button class="nfl-step" data-step="1" title="Faster (+0.05)">+</button>
+        </div>
         <div class="nfl-now">--:-- / --:--</div>
       </div>
     `;
@@ -209,6 +233,25 @@
     panel.querySelectorAll('.nfl-rate').forEach((btn) => {
       btn.addEventListener('click', () => setRate(parseFloat(btn.dataset.rate)));
     });
+
+    panel.querySelectorAll('.nfl-step').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const dir = parseFloat(btn.dataset.step);
+        bumpRate(dir * RATE_STEP);
+      });
+    });
+
+    const rateInput = panel.querySelector('.nfl-rate-input');
+    const commitRate = () => {
+      const v = parseRate(rateInput.value);
+      if (Number.isFinite(v)) setRate(v);
+      else refreshPanel();
+    };
+    rateInput.addEventListener('change', commitRate);
+    rateInput.addEventListener('blur', commitRate);
+    rateInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); rateInput.blur(); }
+    });
   }
 
   function commitInputs() {
@@ -249,6 +292,10 @@
       const r = parseFloat(btn.dataset.rate);
       btn.classList.toggle('nfl-rate-on', Math.abs(r - currentRate) < 0.001);
     });
+    const rateInput = panel.querySelector('.nfl-rate-input');
+    if (rateInput && document.activeElement !== rateInput) {
+      rateInput.value = formatRate(currentRate);
+    }
   }
 
   function updateNowDisplay() {

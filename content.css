@@ -178,6 +178,52 @@
   color: #fff;
 }
 
+#nfl-panel .nfl-fine {
+  gap: 4px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+#nfl-panel .nfl-step {
+  width: 24px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ccc;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+#nfl-panel .nfl-step:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+#nfl-panel .nfl-rate-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: center;
+  outline: none;
+  height: 22px;
+  box-sizing: border-box;
+}
+
+#nfl-panel .nfl-rate-input:focus {
+  border-color: #e50914;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 #nfl-panel .nfl-now {
   margin-top: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

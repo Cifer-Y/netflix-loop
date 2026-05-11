@@ -8,7 +8,7 @@ A minimal Chrome extension that loops a specified time range on Netflix. Useful 
 - Set a start/end time, click **Loop** — the player jumps back to start whenever it reaches end
 - **●** button next to each input grabs the current playback time (no typing)
 - Time inputs accept any of: `1:23`, `1:23:45`, or raw seconds (`83`)
-- Playback speed presets: `0.5 / 0.75 / 1× / 1.25 / 1.5` — useful for shadowing / language practice. Pitch is preserved.
+- Playback speed: 5 presets (`0.5 / 0.75 / 1× / 1.25 / 1.5`) plus a fine-adjust row — click `−`/`+` for ±0.05 steps, or type a custom value in the input (range `0.25`–`2.00`, e.g. `0.85`). Pitch preserved.
 - Loop range and speed are remembered per video (keyed by Netflix video ID)
 - Manually dragging the timeline outside the loop range turns the loop off (so you can scrub freely)
 - Survives episode changes (re-binds to the new `<video>` element via `MutationObserver`)
